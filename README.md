@@ -17,7 +17,7 @@ Trilogy / SeriesCharactersOriginal TrilogyLuke Skywalker, Leia Organa, Han Solo,
 
 Getting Started
 No installation required. Just open the file in any modern browser.
-bashgit clone https://github.com/your-username/star-wars-characters.git
+bashgit clone https://github.com/CryptoShorts/star-wars-characters.git
 cd star-wars-characters
 open star_wars_characters.html
 Or simply download the HTML file and open it locally.
