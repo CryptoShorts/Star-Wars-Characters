@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Star Wars Characters</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #000;
+  color: #ffe81f;
+  min-height: 100vh;
+  padding: 20px;
+}
+h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  text-shadow: 0 0 24px rgba(255,232,31,0.5);
+}
+.subtitle {
+  text-align: center;
+  color: #888;
+  font-size: 0.82rem;
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: center;
+  justify-content: center;
+}
+input[type=text] {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,232,31,0.3);
+  background: #111;
+  color: #fff;
+  font-size: 0.88rem;
+  width: 230px;
+  outline: none;
+}
+input[type=text]:focus { border-color: #ffe81f; }
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: center;
+}
+.filter-btn {
+  padding: 5px 15px;
+  border-radius: 15px;
+  border: 1px solid #444;
+  background: #111;
+  color: #aaa;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.filter-btn:hover { border-color: #ffe81f; color: #ffe81f; }
+.filter-btn.active { background: #ffe81f; color: #000; border-color: #ffe81f; font-weight: bold; }
+.count { color: #555; font-size: 0.78rem; text-align: center; margin-bottom: 12px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.card {
+  background: #0d0d0d;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 16px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.card:hover {
+  border-color: rgba(255,232,31,0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(255,232,31,0.1);
+}
+.avatar {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+  border: 2px solid #333;
+}
+.card-name {
+  font-size: 0.78rem;
+  font-weight: bold;
+  color: #fff;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.card-side {
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-block;
+  font-weight: 600;
+}
+.side-light { background: #1a3a5c; color: #6ab0ff; }
+.side-dark  { background: #3a0a0a; color: #ff6666; }
+.side-neutral { background: #1a2a1a; color: #88cc88; }
+.modal-overlay {
+  display: none;
+  position: fixed; top:0;left:0;right:0;bottom:0;
+  background: rgba(0,0,0,0.88);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #0d0d0d;
+  border: 1px solid rgba(255,232,31,0.4);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 390px;
+  width: 92%;
+  position: relative;
+  box-shadow: 0 0 50px rgba(255,232,31,0.1);
+}
+.modal-close {
+  position: absolute; top: 14px; right: 18px;
+  font-size: 1.1rem; cursor: pointer; color: #666;
+  background: none; border: none;
+  font-family: inherit;
+}
+.modal-close:hover { color: #ffe81f; }
+.modal-avatar {
+  width: 74px; height: 74px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #fff;
+  border: 2px solid #444;
+}
+.modal h2 { color: #ffe81f; text-align: center; font-size: 1.2rem; margin-bottom: 6px; }
+.modal-side-wrap { text-align: center; margin-bottom: 14px; }
+.modal-info { font-size: 0.83rem; color: #bbb; line-height: 1.9; }
+.modal-info b { color: #fff; }
+.modal-quote {
+  margin-top: 14px;
+  font-style: italic;
+  color: rgba(255,232,31,0.6);
+  font-size: 0.8rem;
+  border-left: 2px solid rgba(255,232,31,0.3);
+  padding-left: 12px;
+}
+.no-results { text-align: center; color: #444; padding: 60px 0; font-size: 0.9rem; grid-column: 1/-1; }
+</style>
+</head>
+<body>
+
+<h1>Star Wars Characters</h1>
+<p class="subtitle">The Galaxy's Most Iconic Beings &mdash; Click any card for details</p>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search characters..." oninput="render()">
+  <div class="filters" id="filters"></div>
+</div>
+<div class="count" id="count"></div>
+<div class="grid" id="grid"></div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-box">
+    <button class="modal-close" id="modal-close">&#x2715;</button>
+    <div class="modal-avatar" id="m-avatar"></div>
+    <h2 id="m-name"></h2>
+    <div class="modal-side-wrap" id="m-side"></div>
+    <div class="modal-info" id="m-info"></div>
+    <div class="modal-quote" id="m-quote"></div>
+  </div>
+</div>
+
+<script>
+var characters = [
+  {name:"Luke Skywalker",    abbr:"LU", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance / Jedi Order",       origin:"Tatooine",     role:"Jedi Knight",                film:"Original Trilogy",        quote:"May the Force be with you."},
+  {name:"Leia Organa",       abbr:"LE", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance / Resistance",       origin:"Alderaan",     role:"Princess / General",         film:"All Trilogies",           quote:"Help me, Obi-Wan Kenobi. You're my only hope."},
+  {name:"Han Solo",          abbr:"HA", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance / Resistance",       origin:"Corellia",     role:"Smuggler / General",         film:"All Trilogies",           quote:"Never tell me the odds!"},
+  {name:"Obi-Wan Kenobi",    abbr:"OB", side:"light",   bg:"#0d2240", species:"Human",           affil:"Jedi Order",                        origin:"Stewjon",      role:"Jedi Master",                film:"All Trilogies",           quote:"These aren't the droids you're looking for."},
+  {name:"Yoda",              abbr:"YO", side:"light",   bg:"#0d2240", species:"Unknown",         affil:"Jedi Order / Galactic Republic",    origin:"Unknown",      role:"Jedi Grand Master",          film:"All Trilogies",           quote:"Do or do not. There is no try."},
+  {name:"Chewbacca",         abbr:"CH", side:"light",   bg:"#0d2240", species:"Wookiee",         affil:"Rebel Alliance / Resistance",       origin:"Kashyyyk",     role:"Co-pilot / Warrior",         film:"All Trilogies",           quote:"Rrwwgg!"},
+  {name:"R2-D2",             abbr:"R2", side:"light",   bg:"#0d2240", species:"Astromech Droid", affil:"Rebel Alliance / Resistance",       origin:"Naboo",        role:"Astromech Droid",            film:"All Trilogies",           quote:"*enthusiastic beeping*"},
+  {name:"C-3PO",             abbr:"C3", side:"light",   bg:"#0d2240", species:"Protocol Droid",  affil:"Rebel Alliance / Resistance",       origin:"Tatooine",     role:"Protocol Droid",             film:"All Trilogies",           quote:"We're doomed!"},
+  {name:"Padme Amidala",     abbr:"PA", side:"light",   bg:"#0d2240", species:"Human",           affil:"Galactic Republic / Naboo",         origin:"Naboo",        role:"Queen / Senator",            film:"Prequel Trilogy",         quote:"I will not condone a course of action that will lead us to war."},
+  {name:"Anakin Skywalker",  abbr:"AN", side:"light",   bg:"#0d2240", species:"Human",           affil:"Jedi Order / Galactic Republic",    origin:"Tatooine",     role:"Jedi Knight (pre-fall)",     film:"Prequel Trilogy",         quote:"I am a Jedi, like my father before me."},
+  {name:"Qui-Gon Jinn",      abbr:"QG", side:"light",   bg:"#0d2240", species:"Human",           affil:"Jedi Order",                        origin:"Unknown",      role:"Jedi Master",                film:"Episode I",               quote:"There's always a bigger fish."},
+  {name:"Mace Windu",        abbr:"MW", side:"light",   bg:"#0d2240", species:"Human",           affil:"Jedi Order / Galactic Republic",    origin:"Haruun Kal",   role:"Jedi Master / Council",      film:"Prequel Trilogy",         quote:"This party's over."},
+  {name:"Ahsoka Tano",       abbr:"AH", side:"light",   bg:"#0d2240", species:"Togruta",         affil:"Jedi Order / Rebel Alliance",       origin:"Shili",        role:"Former Padawan",             film:"Clone Wars / Ahsoka",     quote:"I am no Jedi."},
+  {name:"Rey",               abbr:"RE", side:"light",   bg:"#0d2240", species:"Human",           affil:"Resistance / Jedi Order",           origin:"Jakku",        role:"Jedi / Scavenger",           film:"Sequel Trilogy",          quote:"I know all about waiting."},
+  {name:"Finn",              abbr:"FI", side:"light",   bg:"#0d2240", species:"Human",           affil:"Resistance",                        origin:"Unknown",      role:"Resistance Fighter",         film:"Sequel Trilogy",          quote:"I was raised to do one thing. Now I'll do it my way."},
+  {name:"Poe Dameron",       abbr:"PO", side:"light",   bg:"#0d2240", species:"Human",           affil:"Resistance",                        origin:"Yavin 4",      role:"Pilot / Commander",          film:"Sequel Trilogy",          quote:"We are the spark that'll light the fire."},
+  {name:"BB-8",              abbr:"BB", side:"light",   bg:"#0d2240", species:"Astromech Droid", affil:"Resistance",                        origin:"Unknown",      role:"Astromech Droid",            film:"Sequel Trilogy",          quote:"*happy beeping*"},
+  {name:"Lando Calrissian",  abbr:"LA", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance / Resistance",       origin:"Socorro",      role:"Administrator / General",    film:"Original Trilogy",        quote:"I've just made a deal that'll keep the Empire out of here forever."},
+  {name:"Wedge Antilles",    abbr:"WE", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance / Resistance",       origin:"Corellia",     role:"Rebel Pilot / General",      film:"Original Trilogy",        quote:"I'll take mine now."},
+  {name:"Mon Mothma",        abbr:"MM", side:"light",   bg:"#0d2240", species:"Human",           affil:"Rebel Alliance",                    origin:"Chandrila",    role:"Alliance Chancellor",        film:"Original Trilogy",        quote:"Many Bothans died to bring us this information."},
+  {name:"Darth Vader",       abbr:"DV", side:"dark",    bg:"#2a0a0a", species:"Human (Cyborg)",  affil:"Galactic Empire / Sith Order",      origin:"Tatooine",     role:"Sith Lord / Dark Lord",      film:"All Trilogies",           quote:"I am your father."},
+  {name:"Palpatine",         abbr:"PA", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"Galactic Empire / Sith Order",      origin:"Naboo",        role:"Emperor / Sith Lord",        film:"All Trilogies",           quote:"Good. Let the hate flow through you."},
+  {name:"Kylo Ren",          abbr:"KR", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"First Order / Knights of Ren",      origin:"Chandrila",    role:"Supreme Leader",             film:"Sequel Trilogy",          quote:"I feel it again. The pull to the light."},
+  {name:"Darth Maul",        abbr:"DM", side:"dark",    bg:"#2a0a0a", species:"Zabrak",          affil:"Sith Order / Crimson Dawn",         origin:"Dathomir",     role:"Sith Apprentice",            film:"Episode I / Solo",        quote:"At last we will reveal ourselves to the Jedi."},
+  {name:"Count Dooku",       abbr:"CD", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"Separatists / Sith Order",          origin:"Serenno",      role:"Sith Lord",                  film:"Prequel Trilogy",         quote:"It is obvious this contest cannot be decided by our knowledge of the Force."},
+  {name:"General Grievous",  abbr:"GG", side:"dark",    bg:"#2a0a0a", species:"Kaleesh Cyborg",  affil:"Separatists",                       origin:"Kalee",        role:"Supreme Commander",          film:"Prequel Trilogy",         quote:"Your lightsabers will make a fine addition to my collection."},
+  {name:"Grand Moff Tarkin", abbr:"GT", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"Galactic Empire",                   origin:"Eriadu",       role:"Imperial Governor",          film:"Original Trilogy",        quote:"Evacuate? In our moment of triumph?"},
+  {name:"Boba Fett",         abbr:"BF", side:"dark",    bg:"#2a0a0a", species:"Human (Clone)",   affil:"Bounty Hunter / Crime Lord",        origin:"Kamino",       role:"Bounty Hunter",              film:"Original / BOBF",         quote:"He's no good to me dead."},
+  {name:"Jabba the Hutt",    abbr:"JH", side:"dark",    bg:"#2a0a0a", species:"Hutt",            affil:"Hutt Cartel",                       origin:"Nal Hutta",    role:"Crime Lord",                 film:"Original Trilogy",        quote:"There will be no bargain."},
+  {name:"Captain Phasma",    abbr:"CP", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"First Order",                       origin:"Parnassos",    role:"Stormtrooper Captain",       film:"Sequel Trilogy",          quote:"Submit your blasters for inspection."},
+  {name:"Asajj Ventress",    abbr:"AV", side:"dark",    bg:"#2a0a0a", species:"Dathomirian",     affil:"Sith Order / Nightsisters",         origin:"Dathomir",     role:"Sith Assassin",              film:"Clone Wars",              quote:"I am the darkness in the light."},
+  {name:"Snoke",             abbr:"SN", side:"dark",    bg:"#2a0a0a", species:"Strand-Cast",     affil:"First Order",                       origin:"Exegol",       role:"Supreme Leader",             film:"Sequel Trilogy",          quote:"Fulfil your destiny."},
+  {name:"General Hux",       abbr:"GH", side:"dark",    bg:"#2a0a0a", species:"Human",           affil:"First Order",                       origin:"Arkanis",      role:"First Order General",        film:"Sequel Trilogy",          quote:"Today is the end of the Republic!"},
+  {name:"The Mandalorian",   abbr:"MN", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Mandalorian / New Republic",        origin:"Aq Vetina",    role:"Bounty Hunter / Warrior",    film:"The Mandalorian",         quote:"This is the Way."},
+  {name:"Grogu",             abbr:"GR", side:"neutral", bg:"#0a2a0a", species:"Unknown",         affil:"Mandalorian / Jedi Order",          origin:"Unknown",      role:"Force Sensitive Child",      film:"The Mandalorian",         quote:"*cooing*"},
+  {name:"Jango Fett",        abbr:"JF", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Bounty Hunter",                     origin:"Concord Dawn", role:"Bounty Hunter / Clone Template", film:"Prequel Trilogy",    quote:"I'm just a simple man trying to make my way in the universe."},
+  {name:"Jar Jar Binks",     abbr:"JJ", side:"neutral", bg:"#0a2a0a", species:"Gungan",          affil:"Galactic Republic",                 origin:"Naboo",        role:"Gungan Representative",      film:"Prequel Trilogy",         quote:"Meesa called Jar Jar Binks!"},
+  {name:"Cassian Andor",     abbr:"CA", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Rebel Alliance / Spy Network",      origin:"Kenari",       role:"Rebel Spy",                  film:"Rogue One / Andor",       quote:"We have a chance to make real allies."},
+  {name:"Jyn Erso",          abbr:"JE", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Rebel Alliance / Rogue One",        origin:"Vallt",        role:"Rebel Fighter",              film:"Rogue One",               quote:"Rebellions are built on hope."},
+  {name:"K-2SO",             abbr:"K2", side:"neutral", bg:"#0a2a0a", species:"Imperial Droid",  affil:"Rebel Alliance",                    origin:"Unknown",      role:"Reprogrammed Imperial Droid",film:"Rogue One",               quote:"The probability of me being wrong is very low."},
+  {name:"Saw Gerrera",       abbr:"SG", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Partisans / Rebel Alliance",        origin:"Onderon",      role:"Rebel Extremist",            film:"Rogue One / Andor",       quote:"Save the Rebellion! Save the dream!"},
+  {name:"Hera Syndulla",     abbr:"HS", side:"neutral", bg:"#0a2a0a", species:"Twi'lek",         affil:"Rebel Alliance",                    origin:"Ryloth",       role:"Rebel Pilot / General",      film:"Rebels / Ahsoka",         quote:"There's always a way through."},
+  {name:"Ezra Bridger",      abbr:"EB", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Rebel Alliance / Jedi",             origin:"Lothal",       role:"Jedi Padawan / Rebel",       film:"Rebels / Ahsoka",         quote:"Every choice leads to this one."},
+  {name:"Bo-Katan Kryze",    abbr:"BK", side:"neutral", bg:"#0a2a0a", species:"Human",           affil:"Mandalorian / Death Watch",         origin:"Mandalore",    role:"Mandalorian Leader",         film:"Clone Wars / Mando",      quote:"Mandalore will never die."}
+];
+
+var activeSide = "all";
+
+function sideClass(s) {
+  if (s === "light") return "side-light";
+  if (s === "dark") return "side-dark";
+  return "side-neutral";
+}
+function sideLabel(s) {
+  if (s === "light") return "Light Side";
+  if (s === "dark") return "Dark Side";
+  return "Neutral";
+}
+
+function initFilters() {
+  var el = document.getElementById("filters");
+  var defs = [
+    {val:"all",     label:"All"},
+    {val:"light",   label:"Light Side"},
+    {val:"dark",    label:"Dark Side"},
+    {val:"neutral", label:"Neutral"}
+  ];
+  for (var i = 0; i < defs.length; i++) {
+    (function(d) {
+      var b = document.createElement("button");
+      b.className = "filter-btn" + (d.val === "all" ? " active" : "");
+      b.textContent = d.label;
+      b.onclick = function() {
+        activeSide = d.val;
+        var btns = document.querySelectorAll(".filter-btn");
+        for (var j = 0; j < btns.length; j++) btns[j].classList.remove("active");
+        b.classList.add("active");
+        render();
+      };
+      el.appendChild(b);
+    })(defs[i]);
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function render() {
+  var q = document.getElementById("search").value.toLowerCase();
+  var filtered = [];
+  for (var i = 0; i < characters.length; i++) {
+    var c = characters[i];
+    var matchSide = (activeSide === "all" || c.side === activeSide);
+    var matchQ = (!q || c.name.toLowerCase().indexOf(q) !== -1 || c.species.toLowerCase().indexOf(q) !== -1 || c.role.toLowerCase().indexOf(q) !== -1);
+    if (matchSide && matchQ) filtered.push(c);
+  }
+  document.getElementById("count").textContent = filtered.length + " character" + (filtered.length !== 1 ? "s" : "") + " found";
+  var grid = document.getElementById("grid");
+  if (filtered.length === 0) {
+    grid.innerHTML = "<div class=\"no-results\">No characters found in this sector of the galaxy.</div>";
+    return;
+  }
+  var html = "";
+  for (var i = 0; i < filtered.length; i++) {
+    var c = filtered[i];
+    var sc = sideClass(c.side);
+    var sl = sideLabel(c.side);
+    html += "<div class=\"card\" data-name=\"" + escHtml(c.name) + "\">";
+    html += "<div class=\"avatar\" style=\"background:" + c.bg + "\">" + escHtml(c.abbr) + "</div>";
+    html += "<div class=\"card-name\">" + escHtml(c.name) + "</div>";
+    html += "<div class=\"card-side " + sc + "\">" + sl + "</div>";
+    html += "</div>";
+  }
+  grid.innerHTML = html;
+  var cards = grid.querySelectorAll(".card");
+  for (var j = 0; j < cards.length; j++) {
+    cards[j].addEventListener("click", (function(name){ return function(){ openModal(name); }; })(cards[j].getAttribute("data-name")));
+  }
+}
+
+function openModal(name) {
+  var c = null;
+  for (var i = 0; i < characters.length; i++) {
+    if (characters[i].name === name) { c = characters[i]; break; }
+  }
+  if (!c) return;
+  var av = document.getElementById("m-avatar");
+  av.style.background = c.bg;
+  av.textContent = c.abbr;
+  document.getElementById("m-name").textContent = c.name;
+  var sc = sideClass(c.side);
+  var sl = sideLabel(c.side);
+  document.getElementById("m-side").innerHTML = "<span class=\"card-side " + sc + "\">" + sl + "</span>";
+  document.getElementById("m-info").innerHTML =
+    "<div>Species: <b>" + escHtml(c.species) + "</b></div>" +
+    "<div>Origin: <b>" + escHtml(c.origin) + "</b></div>" +
+    "<div>Role: <b>" + escHtml(c.role) + "</b></div>" +
+    "<div>Affiliation: <b>" + escHtml(c.affil) + "</b></div>" +
+    "<div>Appears in: <b>" + escHtml(c.film) + "</b></div>";
+  document.getElementById("m-quote").textContent = "\"" + c.quote + "\"";
+  document.getElementById("modal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.remove("open");
+}
+
+document.getElementById("modal").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById("modal-close").addEventListener("click", closeModal);
+document.addEventListener("keydown", function(e) { if (e.key === "Escape") closeModal(); });
+
+initFilters();
+render();
+</script>
+</body>
+</html>
